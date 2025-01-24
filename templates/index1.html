@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Monitoring</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .plotly-graph-div {
+            margin: auto;
+            width: 50%;
+            background-color: rgba(151, 128, 128, 0.688);
+            padding: 20px;
+            display: inline-block;
+        }
+        .alert {
+            color: red;
+            font-weight: bold;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button-container button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #1f77b4;
+            color: white;
+            border-radius: 5px;
+        }
+        .button-container button:hover {
+            background-color: #155d8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>System Monitoring</h1>
+        <div id="cpu-gauge" class="plotly-graph-div"></div>
+        <div id="mem-gauge" class="plotly-graph-div"></div>
+
+        <!-- Display the warning message if CPU or Memory usage is above threshold -->
+        {% if message %}
+        <div class="alert">{{ message }}</div>
+        {% endif %}
+
+        <!-- Interactive Buttons -->
+        <div class="button-container">
+            <button onclick="updateGauges()">Refresh Data</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial CPU and Memory values
+        var cpuMetric = {{ cpu_metric }};
+        var memMetric = {{ mem_metric }};
+        
+        var cpuThreshold = 80;
+        var memThreshold = 80;
+
+        // Create gauges
+        function createGauge(metric, threshold, title, divId) {
+            return {
+                type: "indicator",
+                mode: "gauge+number",
+                value: metric,
+                title: { text: title },
+                gauge: {
+                    axis: { range: [null, 100] },
+                    bar: { color: "#1f77b4" },
+                    bgcolor: "white",
+                    borderwidth: 2,
+                    bordercolor: "#ccc",
+                    steps: [
+                        { range: [0, 50], color: "#d9f0a3" },
+                        { range: [50, 80], color: "#ffeb84" },
+                        { range: [80, 100], color: "#ff5f5f" }
+                    ],
+                    threshold: {
+                        line: { color: "red", width: 4 },
+                        thickness: 0.75,
+                        value: threshold
+                    }
+                },
+                hoverinfo: 'value+label+name+description',  // Enhanced hover info
+            };
+        }
+
+        // Layout for each gauge
+        var cpuGaugeLayout = { title: "CPU Utilization" };
+        var memGaugeLayout = { title: "Memory Utilization" };
+
+        // Plot the gauges initially
+        Plotly.newPlot('cpu-gauge', [createGauge(cpuMetric, cpuThreshold, "CPU", "cpu-gauge")], cpuGaugeLayout);
+        Plotly.newPlot('mem-gauge', [createGauge(memMetric, memThreshold, "Memory", "mem-gauge")], memGaugeLayout);
+
+        // Function to update the gauges with new data
+        function updateGauges() {
+            cpuMetric = Math.random() * 100;  // Simulate new data for CPU
+            memMetric = Math.random() * 100;  // Simulate new data for Memory
+
+            Plotly.react('cpu-gauge', [createGauge(cpuMetric, cpuThreshold, "CPU", "cpu-gauge")], cpuGaugeLayout);
+            Plotly.react('mem-gauge', [createGauge(memMetric, memThreshold, "Memory", "mem-gauge")], memGaugeLayout);
+        }
+    </script>
+</body>
+</html>

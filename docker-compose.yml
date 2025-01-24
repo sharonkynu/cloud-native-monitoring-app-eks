@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  flask:
+    container_name: python_moni_app
+    image: monitoring_app_flask:latest
+    network_mode: "host"
+    restart: unless-stopped
